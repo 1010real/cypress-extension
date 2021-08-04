@@ -4,7 +4,7 @@ export default async (window: Window) => {
   const handlers: Handlers = {
     clickHandler: async (e) => {
       console.log(`clicked: ${e.target}`)
-      if (!canHandleEvent(e)) return
+      if (!isTargetEvent(e)) return
 
       let clickedPoint = { x: e.clientX, y: e.clientY }
       let params = {
@@ -12,12 +12,10 @@ export default async (window: Window) => {
         clickedPoint,
       }
 
-      const response = await chrome.runtime.sendMessage({
-        action: 'aiueo1',
-        data: params,
-      }, (response) => {
-        console.log(`response: ${response}`)
-        return Promise.resolve(response)
+      chrome.runtime.sendMessage({
+        action: 'log',
+        data: { params },
+        needResponse: false,
       })
     },
     sendMessageHandler: (msg: any) => {
@@ -26,8 +24,8 @@ export default async (window: Window) => {
         msg.action,
         JSON.stringify(msg.data)
       )
-      if (isMainFrame()) {
-        console.log('on weup frame')
+      if (isTopFrame()) {
+        console.log('on top frame')
         switch (msg.action) {
           case 'aiueo2':
             console.log('received sendMessage in contentScript.')
@@ -41,11 +39,11 @@ export default async (window: Window) => {
   initScreen(window, handlers)
 
   // detect whether event is triggered by user
-  function canHandleEvent(e) {
+  function isTargetEvent(e) {
     return e.isTrusted
   }
 
-  function isMainFrame() {
+  function isTopFrame() {
     return window.self === window.top
   }
 }
@@ -61,4 +59,3 @@ function initScreen(window: Window, handlers: Handlers) {
   const boundSendMessageHandler = handlers.sendMessageHandler.bind(this)
   chrome.runtime.onMessage.addListener(boundSendMessageHandler)
 }
-
