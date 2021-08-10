@@ -2,6 +2,12 @@ import { getStorage, setStorage } from '../lib/storage'
 
 let storage
 
+async function getCurrentTab() {
+  const queryOptions = { active: true, currentWindow: true }
+  const [tab] = await chrome.tabs.query(queryOptions)
+  return tab
+}
+
 export default (window: Window) => {
   const document = window.document
   const togglebtn: HTMLButtonElement = document.querySelector('#togglebtn')
@@ -18,9 +24,9 @@ export default (window: Window) => {
   const setTextArea = (log: any[]) => {
     textarea.value = log
       .map((item) => {
-        if (item.type === 'visit') {
-          return `cy.visit('${item.inputData}')`
-        }
+        if (item.type === 'visit') return `cy.visit('${item.inputData}')`
+        if (item.type === 'waitvisit') return 'cy.wait(5000)'
+
         const selector = `cy.get("${item.selector}")`
         let action: string
 
@@ -30,6 +36,7 @@ export default (window: Window) => {
           case 'DIV':
           case 'A':
           case 'P':
+          case 'TD':
             action = 'click()'
             break
           case 'select-one':
@@ -40,6 +47,9 @@ export default (window: Window) => {
             action = `check('${item.inputData}')`
             break
           case 'text':
+          case 'email':
+          case 'password':
+          case 'textarea':
             action = `type('${item.inputData}')`
             break
         }
@@ -49,7 +59,15 @@ export default (window: Window) => {
   }
 
   togglebtn.onclick = async () => {
-    storage = { ...storage, startLog: !storage.startLog }
+    const tab = await getCurrentTab()
+    storage = {
+      ...storage,
+      startLog: !storage.startLog,
+      log: [
+        ...storage.log,
+        { type: 'visit', targetType: null, inputData: tab.url },
+      ],
+    }
     await setStorage(storage)
     setStatus(storage.startLog)
   }

@@ -41,11 +41,18 @@ export default () => {
     const storage = await getStorage()
     if (!storage.startLog) return
     console.log('visit', null, tab.url)
+    // await setStorage({
+    //   ...storage,
+    //   log: [
+    //     ...storage.log,
+    //     { type: 'visit', targetType: null, inputData: tab.url },
+    //   ],
+    // })
     await setStorage({
       ...storage,
       log: [
         ...storage.log,
-        { type: 'visit', targetType: null, inputData: tab.url },
+        { type: 'waitvisit', targetType: null, inputData: tab.url },
       ],
     })
   })

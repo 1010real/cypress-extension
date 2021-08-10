@@ -1,13 +1,17 @@
 import getCssSelector from 'css-selector-generator'
 
 const clickTargetType = ['button']
-const clickTargetTagName = ['SPAN', 'DIV', 'P', 'A']
+const clickTargetTagName = ['SPAN', 'DIV', 'P', 'A', 'TD']
 const inputTargetType = ['radio', 'checkbox', 'select-one']
 
 export default async (window: Window) => {
   const handlers: Handlers = {
     clickHandler: async (e) => {
-      console.log(`clicked: ${e.target}`, e)
+      console.log(
+        `clicked: ${e.target}`,
+        e,
+        getCssSelector(e.target as Element)
+      )
       if (!isTargetEvent(e)) return
       // @ts-ignore
       const targetType = e.target.type as string
@@ -81,6 +85,9 @@ export default async (window: Window) => {
       // @ts-ignore
       switch (e.target.type) {
         case 'text':
+        case 'email':
+        case 'password':
+        case 'textarea':
           inputData = (e.target as HTMLInputElement).value
           break
         default:
