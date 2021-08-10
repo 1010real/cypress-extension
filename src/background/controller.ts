@@ -24,9 +24,14 @@ export default () => {
 
       case 'log':
         if (!storage.startLog) return
+        console.log(
+          request.data.params.type,
+          request.data.params.targetType,
+          request.data.params.inputData
+        )
         await setStorage({
           ...storage,
-          log: [...storage.log, request.data.params.selector as string],
+          log: [...storage.log, request.data.params],
         })
     }
   }

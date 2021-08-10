@@ -14,8 +14,34 @@ export default (window: Window) => {
     togglebtn.innerText = startLog ? '停止' : '開始'
   }
 
-  const setTextArea = (log: string[]) => {
-    textarea.value = log.map((item) => `cy.get("${item}")`).join('\n')
+  const setTextArea = (log: any[]) => {
+    textarea.value = log
+      .map((item) => {
+        const selector = `cy.get("${item.selector}")`
+        let action: string
+
+        switch (item.targetType) {
+          case 'button':
+          case 'SPAN':
+          case 'DIV':
+          case 'A':
+          case 'P':
+            action = 'click()'
+            break
+          case 'select-one':
+            action = `select('${item.inputData}')`
+            break
+          case 'checkbox':
+          case 'radio':
+            action = `check('${item.inputData}')`
+            break
+          case 'text':
+            action = `type('${item.inputData}')`
+            break
+        }
+        return `${selector}.${action}`
+      })
+      .join('\n')
   }
 
   togglebtn.onclick = async () => {
