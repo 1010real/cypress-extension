@@ -3,13 +3,7 @@ import { getStorage, setStorage, initStorage } from '../lib/storage'
 export default () => {
   chrome.runtime.onInstalled.addListener(async ({}) => {
     await initStorage()
-    chrome.tabs.create({ url: 'https://console.smartmat.io/' })
   })
-
-  const handleActionClick = async () => {
-    const storage = await getStorage()
-  }
-  chrome.action.onClicked.addListener(handleActionClick)
 
   const handleMessage = async (request: any) => {
     const storage = await getStorage()
@@ -37,10 +31,22 @@ export default () => {
   }
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('onMessage', request.action)
+    // console.log('onMessage', request.action)
     handleMessage(request).then((value) => sendResponse(value))
     return request.needResponse
   })
 
-  chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {})
+  chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+    if (info.status !== 'complete') return
+    const storage = await getStorage()
+    if (!storage.startLog) return
+    console.log('visit', null, tab.url)
+    await setStorage({
+      ...storage,
+      log: [
+        ...storage.log,
+        { type: 'visit', targetType: null, inputData: tab.url },
+      ],
+    })
+  })
 }

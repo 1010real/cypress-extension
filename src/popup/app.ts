@@ -17,6 +17,9 @@ export default (window: Window) => {
   const setTextArea = (log: any[]) => {
     textarea.value = log
       .map((item) => {
+        if (item.type === 'visit') {
+          return `cy.visit('${item.inputData}')`
+        }
         const selector = `cy.get("${item.selector}")`
         let action: string
 

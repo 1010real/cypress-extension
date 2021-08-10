@@ -7,7 +7,7 @@ const initStorageValue: StorageType = {
 
 export type StorageType = {
   startLog: boolean
-  log: string[]
+  log: any[]
 }
 
 export const initStorage = async () => {
