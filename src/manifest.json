@@ -12,7 +12,7 @@
   "content_scripts": [
     {
       "all_frames": true,
-      "matches": ["https://console.smartmat.io/*"],
+      "matches": ["<all_urls>"],
       "js": ["contentScript.js"],
       "css": ["styles/contentScript.css"]
     }
@@ -22,5 +22,5 @@
   },
   "permissions": ["storage", "tabs"],
   "optional_permissions": [],
-  "host_permissions": ["*://*/*"]
+  "host_permissions": ["<all_urls>"]
 }

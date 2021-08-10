@@ -6,6 +6,7 @@ export default (window: Window) => {
   const document = window.document
   const togglebtn: HTMLButtonElement = document.querySelector('#togglebtn')
   const clearbtn: HTMLButtonElement = document.querySelector('#clearbtn')
+  const copybtn: HTMLButtonElement = document.querySelector('#copybtn')
   const textarea: HTMLTextAreaElement = document.querySelector('#log')
   const status: HTMLElement = document.querySelector('#status')
 
@@ -57,6 +58,15 @@ export default (window: Window) => {
     storage = { ...storage, log: [] }
     await setStorage(storage)
     setTextArea(storage.log)
+  }
+
+  copybtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(textarea.value)
+      console.log('code copied to clipboard')
+    } catch (err) {
+      console.error('Failed to copy: ', err)
+    }
   }
 
   window.onload = async (e) => {
