@@ -1,17 +1,27 @@
 import getCssSelector from 'css-selector-generator'
+import { getStorage } from '../lib/storage'
 
 const clickTargetType = ['button']
 const clickTargetTagName = ['SPAN', 'DIV', 'P', 'A', 'TD']
 const inputTargetType = ['radio', 'checkbox', 'select-one']
+let storage
 
 export default async (window: Window) => {
+  storage = await getStorage()
+  const getCssSelectorWrapper = (target: Element) => {
+    const testid = target.getAttribute('data-testid')
+    const testidSelector = testid ? `[data-testid='${testid}']` : testid
+    return testidSelector || getCssSelector(target, {})
+  }
   const handlers: Handlers = {
+    mouseoverHandler: (e) => {
+      if (storage.startLog) return
+      if (!isTargetEvent(e)) return
+      setSelectorTextWrapper(getCssSelectorWrapper(e.target as Element))
+    },
     clickHandler: async (e) => {
-      console.log(
-        `clicked: ${e.target}`,
-        e,
-        getCssSelector(e.target as Element)
-      )
+      console.log(`clicked: ${e.target}`, e)
+      if (!storage.startLog) return
       if (!isTargetEvent(e)) return
       // @ts-ignore
       const targetType = e.target.type as string
@@ -32,8 +42,10 @@ export default async (window: Window) => {
         return
 
       // const clickedPoint = { x: e.clientX, y: e.clientY }
+      const selector = getCssSelectorWrapper(e.target as Element)
+      setSelectorTextWrapper(selector)
       const params = {
-        selector: getCssSelector(e.target as Element),
+        selector,
         type: e.type,
         // @ts-ignore
         targetType: targetType || tagName,
@@ -49,6 +61,7 @@ export default async (window: Window) => {
     },
     inputHandler: async (e) => {
       console.log(`inputed: ${e.target}`, e)
+      if (!storage.startLog) return
       if (!isTargetEvent(e)) return
       // @ts-ignore
       const targetType = e.target.type as string
@@ -65,8 +78,10 @@ export default async (window: Window) => {
         default:
           return
       }
+      const selector = getCssSelectorWrapper(e.target as Element)
+      setSelectorTextWrapper(selector)
       const params = {
-        selector: getCssSelector(e.target as Element),
+        selector,
         type: e.type,
         targetType: (e.target as HTMLSelectElement).type,
         inputData,
@@ -79,6 +94,7 @@ export default async (window: Window) => {
     },
     focusoutHandler: async (e) => {
       console.log(`focusout: ${e.target}`, e)
+      if (!storage.startLog) return
       if (!isTargetEvent(e)) return
 
       let inputData
@@ -93,8 +109,10 @@ export default async (window: Window) => {
         default:
           return
       }
+      const selector = getCssSelectorWrapper(e.target as Element)
+      setSelectorTextWrapper(selector)
       const params = {
-        selector: getCssSelector(e.target as Element),
+        selector,
         type: e.type,
         // @ts-ignore
         targetType: e.target.type,
@@ -106,7 +124,7 @@ export default async (window: Window) => {
         needResponse: false,
       })
     },
-    sendMessageHandler: (msg: any) => {
+    sendMessageHandler: async (msg: any) => {
       console.log(
         'received message from background/popup',
         msg.action,
@@ -115,16 +133,17 @@ export default async (window: Window) => {
       if (isTopFrame()) {
         console.log('on top frame')
         switch (msg.action) {
-          case 'aiueo2':
-            console.log('received sendMessage in contentScript.')
+          case 'reloadStorage':
+            storage = await getStorage()
             break
         }
       }
-      return true
+      // return true
     },
   }
 
-  initScreen(window, handlers)
+  const { setSelectorText } = initScreen(window, handlers)
+  // initScreen(window, handlers)
 
   // detect whether event is triggered by user
   function isTargetEvent(e) {
@@ -134,16 +153,23 @@ export default async (window: Window) => {
   function isTopFrame() {
     return window.self === window.top
   }
+
+  function setSelectorTextWrapper(text: string) {
+    setSelectorText(text)
+  }
 }
 
 export type Handlers = {
+  mouseoverHandler: (e: MouseEvent) => void
   clickHandler: (e: MouseEvent) => void
   inputHandler: (e: InputEvent) => void
   focusoutHandler: (e: FocusEvent) => void
-  sendMessageHandler: (msg: any) => boolean | void
+  sendMessageHandler: (msg: any) => Promise<boolean | void>
 }
 
 function initScreen(window: Window, handlers: Handlers) {
+  const boundMouseoverHandler = handlers.mouseoverHandler.bind(this)
+  window.addEventListener('mouseover', boundMouseoverHandler, true)
   const boundClickHandler = handlers.clickHandler.bind(this)
   window.addEventListener('click', boundClickHandler, true)
   const boundInputHandler = handlers.inputHandler.bind(this)
@@ -152,4 +178,23 @@ function initScreen(window: Window, handlers: Handlers) {
   window.addEventListener('focusout', boundFocusoutHandler, true)
   const boundSendMessageHandler = handlers.sendMessageHandler.bind(this)
   chrome.runtime.onMessage.addListener(boundSendMessageHandler)
+
+  const screenStyle =
+    'width: 100%; height: 0; display: block; background-color: transparent;'
+  const screen = window.document.createElement('div')
+  screen.id = 'cypressFrame'
+  screen.setAttribute('style', screenStyle)
+  window.document.body.appendChild(screen)
+
+  const selectorDisplayStyle =
+    'width: 320px; display: block; position: fixed; right: 8px; bottom: 8px; z-index: 2147483647; background-color: transparent; color: purple; font-weight: bold; text-align: right;'
+  const selectorDisplay = window.document.createElement('p')
+  selectorDisplay.innerText = 'あいうえお'
+  selectorDisplay.setAttribute('style', selectorDisplayStyle)
+  screen.appendChild(selectorDisplay)
+
+  const setSelectorText = (text: string) => {
+    selectorDisplay.innerText = text
+  }
+  return { setSelectorText }
 }

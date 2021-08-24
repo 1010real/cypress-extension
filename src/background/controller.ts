@@ -13,7 +13,7 @@ export default () => {
         return { data: 'success to start logging' }
 
       case 'endLog':
-        await setStorage({ ...storage, startLog: true })
+        await setStorage({ ...storage, startLog: false })
         return { data: 'success to end logging' }
 
       case 'log':

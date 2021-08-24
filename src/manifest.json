@@ -12,7 +12,10 @@
   "content_scripts": [
     {
       "all_frames": true,
-      "matches": ["<all_urls>"],
+      "matches": [
+        "https://dev-console.smartmat.work/*",
+        "https://console.smartmat.io/*"
+      ],
       "js": ["contentScript.js"],
       "css": ["styles/contentScript.css"]
     }

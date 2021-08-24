@@ -10,6 +10,17 @@ export type StorageType = {
   log: any[]
 }
 
+export async function getCurrentTab() {
+  const queryOptions = { active: true, currentWindow: true }
+  const [tab] = await chrome.tabs.query(queryOptions)
+  return tab
+}
+
+export const tabsSendMessage = async (msg: { action: string }) => {
+  const tab = await getCurrentTab()
+  chrome.tabs.sendMessage(tab.id, msg)
+}
+
 export const initStorage = async () => {
   await setStorage(initStorageValue)
 }
@@ -17,7 +28,8 @@ export const initStorage = async () => {
 export const setStorage = (value: StorageType): Promise<void> => {
   return new Promise((resolve) => {
     // console.log('setStorage', value)
-    chrome.storage.sync.set({ [storageKey]: value }, () => {
+    chrome.storage.sync.set({ [storageKey]: value }, async () => {
+      await tabsSendMessage({ action: 'reloadStorage' })
       resolve()
     })
   })
