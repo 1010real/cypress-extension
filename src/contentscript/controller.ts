@@ -11,13 +11,15 @@ export default async (window: Window) => {
   const getCssSelectorWrapper = (target: Element) => {
     const testid = target.getAttribute('data-testid')
     const testidSelector = testid ? `[data-testid='${testid}']` : testid
-    return testidSelector || getCssSelector(target, {})
+    return testidSelector || getCssSelector(target)
   }
   const handlers: Handlers = {
     mouseoverHandler: (e) => {
-      if (storage.startLog) return
+      // if (storage.startLog) return
       if (!isTargetEvent(e)) return
-      setSelectorTextWrapper(getCssSelectorWrapper(e.target as Element))
+      setTimeout(() => {
+        setSelectorTextWrapper(getCssSelectorWrapper(e.target as Element))
+      }, 100)
     },
     clickHandler: async (e) => {
       console.log(`clicked: ${e.target}`, e)

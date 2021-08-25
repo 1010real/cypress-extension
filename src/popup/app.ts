@@ -44,7 +44,7 @@ export default (window: Window) => {
             break
           case 'checkbox':
           case 'radio':
-            action = `check('${item.inputData}')`
+            action = `check('${item.inputData}',{force: true})`
             break
           case 'text':
           case 'email':
