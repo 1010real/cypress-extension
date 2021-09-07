@@ -1,5 +1,3 @@
-// import ChromeExtensionReloader from 'webpack-chrome-extension-reloader'
-
 const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
@@ -49,7 +47,7 @@ const base = {
 const development = {
   ...base,
   mode: 'development',
-  devtool: 'source-map', // todo:後で適切な設定に
+  devtool: 'source-map',
   module: {
     ...base.module,
   },
@@ -59,7 +57,6 @@ const development = {
       filename: '[name].js.map',
       exclude: ['vendor.js'],
     }),
-    new webpack.HotModuleReplacementPlugin(),
   ],
 }
 
