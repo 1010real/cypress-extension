@@ -1,4 +1,4 @@
-import getCssSelector from 'css-selector-generator'
+import { finder } from '@medv/finder'
 import { getStorage } from '../lib/storage'
 
 const clickTargetType = ['button']
@@ -11,7 +11,7 @@ export default async (window: Window) => {
   const getCssSelectorWrapper = (target: Element) => {
     const testid = target.getAttribute('data-testid')
     const testidSelector = testid ? `[data-testid='${testid}']` : testid
-    return testidSelector || getCssSelector(target)
+    return testidSelector || finder(target)
   }
   const handlers: Handlers = {
     mouseoverHandler: (e) => {
