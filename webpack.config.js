@@ -48,9 +48,6 @@ const development = {
   ...base,
   mode: 'development',
   devtool: 'source-map',
-  module: {
-    ...base.module,
-  },
   plugins: [
     ...base.plugins,
     new webpack.SourceMapDevToolPlugin({
@@ -63,7 +60,6 @@ const development = {
 const production = {
   ...base,
   mode: 'production',
-  devtool: '',
   plugins: [
     ...base.plugins,
     new webpack.LoaderOptionsPlugin({
